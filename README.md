@@ -76,7 +76,7 @@ Interactive byte streams stay on the CLI (`cautem connect`). New gateway operati
 
 ## Installation
 
-For source development, use the sibling `go.work` workspace and run `go test ./...` here. `tests/consumer` is an external-module smoke test: it builds the public SDK with `GOWORK=off`, using only the versioned `quarshell-proto` dependency. CI runs that consumer independently of the monorepo workspace. The control client depends on the gateway's generated Go contract package. Publish the gateway beta containing that package before publishing the matching SDK beta.
+For source development, use the sibling `go.work` workspace and run `go test ./...` here. `tests/consumer` is an external-module smoke test: it builds the public SDK with `GOWORK=off`, using only the versioned `quarshell-proto` dependency. CI runs that consumer outside the workspace. The control client depends on the gateway's generated Go contract package. Publish the gateway module containing that package before publishing a matching SDK 0.x tag.
 
 **Requirements:** Go 1.27+
 
