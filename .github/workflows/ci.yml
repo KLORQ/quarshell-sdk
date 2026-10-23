@@ -1,0 +1,246 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 the quarshell authors
+# SPDX-License-Identifier: Apache-2.0
+#
+name: CI
+
+env:
+  CGO_ENABLED: "0"
+  GOWORK: ${{ github.workspace }}/go.work
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+  id-token: write  # Codecov OIDC
+
+jobs:
+  standalone-consumer:
+    name: Standalone consumer (no go.work)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./tests/consumer
+    env:
+      GOWORK: off
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.27.3"
+          cache: true
+          cache-dependency-path: tests/consumer/go.sum
+      - name: Verify consumer module dependencies
+        run: go mod tidy -diff
+      - name: Compile and test public SDK consumer
+        run: go test -mod=readonly -count=1 ./...
+
+  formatting:
+    name: Formatting
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: .
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Checkout quarshell-proto dependency
+        uses: actions/checkout@v4
+        with:
+          repository: KLORQ/quarshell-proto
+          ref: v0.2.6
+          path: quarshell-proto
+
+      - name: Configure Go workspace
+        shell: bash
+        run: |
+          cat > "$GITHUB_WORKSPACE/go.work" <<'EOF'
+          go 1.27.0
+
+          use (
+            .
+            ./quarshell-proto
+          )
+
+          replace github.com/KLORQ/quarshell-proto v0.2.6 => ./quarshell-proto
+          EOF
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.27.3"
+          cache: true
+      - name: Check gofmt
+        run: |
+          set -euo pipefail
+          bad="$(gofmt -l .)"
+          if [[ -n "$bad" ]]; then
+            echo "ERROR: not formatted:"
+            echo "$bad"
+            exit 1
+          fi
+          echo "gofmt: ok"
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: .
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Checkout quarshell-proto dependency
+        uses: actions/checkout@v4
+        with:
+          repository: KLORQ/quarshell-proto
+          ref: v0.2.6
+          path: quarshell-proto
+
+      - name: Configure Go workspace
+        shell: bash
+        run: |
+          cat > "$GITHUB_WORKSPACE/go.work" <<'EOF'
+          go 1.27.0
+
+          use (
+            .
+            ./quarshell-proto
+          )
+
+          replace github.com/KLORQ/quarshell-proto v0.2.6 => ./quarshell-proto
+          EOF
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.27.3"
+          cache: true
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v8
+        with:
+          version: v2.14.0
+          working-directory: .
+          args: --timeout=5m
+
+  build:
+    name: Build - ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    defaults:
+      run:
+        working-directory: .
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Checkout quarshell-proto dependency
+        uses: actions/checkout@v4
+        with:
+          repository: KLORQ/quarshell-proto
+          ref: v0.2.6
+          path: quarshell-proto
+
+      - name: Configure Go workspace
+        shell: bash
+        run: |
+          cat > "$GITHUB_WORKSPACE/go.work" <<'EOF'
+          go 1.27.0
+
+          use (
+            .
+            ./quarshell-proto
+          )
+
+          replace github.com/KLORQ/quarshell-proto v0.2.6 => ./quarshell-proto
+          EOF
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.27.3"
+          cache: true
+      - name: Download modules
+        run: go mod download
+      - name: Build
+        run: go build ./...
+
+  test:
+    name: Test - ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    defaults:
+      run:
+        working-directory: .
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Checkout quarshell-proto dependency
+        uses: actions/checkout@v4
+        with:
+          repository: KLORQ/quarshell-proto
+          ref: v0.2.6
+          path: quarshell-proto
+
+      - name: Configure Go workspace
+        shell: bash
+        run: |
+          cat > "$GITHUB_WORKSPACE/go.work" <<'EOF'
+          go 1.27.0
+
+          use (
+            .
+            ./quarshell-proto
+          )
+
+          replace github.com/KLORQ/quarshell-proto v0.2.6 => ./quarshell-proto
+          EOF
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.27.3"
+          cache: true
+      - name: Download modules
+        run: go mod download
+      - name: Vet
+        if: matrix.os == 'ubuntu-latest'
+        run: go vet ./...
+      - name: Test (race + coverage)
+        if: matrix.os == 'ubuntu-latest'
+        shell: bash
+        env:
+          CGO_ENABLED: "1"
+        run: go test -race -count=1 -coverprofile=coverage.txt -covermode=atomic ./...
+      - name: Test (race)
+        if: matrix.os == 'macos-latest'
+        shell: bash
+        env:
+          CGO_ENABLED: "1"
+        run: go test -race -count=1 ./...
+      - name: Test
+        if: matrix.os == 'windows-latest'
+        shell: bash
+        run: go test -count=1 ./...
+      - name: Upload coverage to Codecov
+        if: matrix.os == 'ubuntu-latest'
+        uses: codecov/codecov-action@v5
+        with:
+          use_oidc: true
+          files: ./quarshell-sdk/coverage.txt
+          flags: unittests
+          name: codecov-quarshell-sdk
+          fail_ci_if_error: false
