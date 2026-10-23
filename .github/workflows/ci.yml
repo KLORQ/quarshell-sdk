@@ -54,7 +54,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: KLORQ/quarshell-proto
-          ref: v0.2.3
+          ref: v0.2.5
           path: quarshell-proto
 
       - name: Configure Go workspace
@@ -68,7 +68,7 @@ jobs:
             ./quarshell-proto
           )
 
-          replace github.com/KLORQ/quarshell-proto v0.2.2 => ./quarshell-proto
+          replace github.com/KLORQ/quarshell-proto v0.2.5 => ./quarshell-proto
           EOF
 
       - uses: actions/setup-go@v5
@@ -101,7 +101,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: KLORQ/quarshell-proto
-          ref: v0.2.3
+          ref: v0.2.5
           path: quarshell-proto
 
       - name: Configure Go workspace
@@ -115,7 +115,7 @@ jobs:
             ./quarshell-proto
           )
 
-          replace github.com/KLORQ/quarshell-proto v0.2.2 => ./quarshell-proto
+          replace github.com/KLORQ/quarshell-proto v0.2.5 => ./quarshell-proto
           EOF
 
       - uses: actions/setup-go@v5
@@ -148,7 +148,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: KLORQ/quarshell-proto
-          ref: v0.2.3
+          ref: v0.2.5
           path: quarshell-proto
 
       - name: Configure Go workspace
@@ -162,7 +162,7 @@ jobs:
             ./quarshell-proto
           )
 
-          replace github.com/KLORQ/quarshell-proto v0.2.2 => ./quarshell-proto
+          replace github.com/KLORQ/quarshell-proto v0.2.5 => ./quarshell-proto
           EOF
 
       - uses: actions/setup-go@v5
@@ -193,7 +193,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: KLORQ/quarshell-proto
-          ref: v0.2.3
+          ref: v0.2.5
           path: quarshell-proto
 
       - name: Configure Go workspace
@@ -207,7 +207,7 @@ jobs:
             ./quarshell-proto
           )
 
-          replace github.com/KLORQ/quarshell-proto v0.2.2 => ./quarshell-proto
+          replace github.com/KLORQ/quarshell-proto v0.2.5 => ./quarshell-proto
           EOF
 
       - uses: actions/setup-go@v5
