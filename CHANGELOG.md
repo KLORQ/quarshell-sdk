@@ -45,7 +45,7 @@
 
 ### Changed
 
-- Rename the module, runtime identifiers and project references to the `cautem` namespace.
+- Rename the module, runtime identifiers and project references to the `quarshell` namespace.
 
 ## [v0.1.0-beta.1] - 2026-10-10
 

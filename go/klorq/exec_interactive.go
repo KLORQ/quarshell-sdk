@@ -7,9 +7,9 @@ import (
 	"sync"
 	"time"
 
-	runtimev1 "github.com/KLORQ/quarshell-proto/gen/go/cautem/runtime/v1"
 	dm "github.com/KLORQ/quarshell-proto/gen/go/openshell/datamodel/v1"
 	pb "github.com/KLORQ/quarshell-proto/gen/go/openshell/gateway/v1"
+	runtimev1 "github.com/KLORQ/quarshell-proto/gen/go/quarshell/runtime/v1"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/types/known/durationpb"
 )
@@ -24,10 +24,10 @@ func (c *Client) ExecInteractiveWithTTY(ctx context.Context, workspace, name str
 // setting and optional server-side process deadline.
 func (c *Client) ExecInteractiveWithTTYTimeout(ctx context.Context, workspace, name string, argv []string, tty bool, cols, rows uint32, timeout time.Duration, options SandboxExecOptions) (SandboxInteractiveOutput, error) {
 	if options.AttachMainProcess {
-		if !tty || len(argv) != 0 {
-			return nil, fmt.Errorf("main-process attachment requires tty=true and an empty command")
+		if len(argv) != 0 {
+			return nil, fmt.Errorf("main-process attachment requires an empty command")
 		}
-		return c.AttachMainProcessTTY(ctx, workspace, name, cols, rows)
+		return c.AttachMainProcess(ctx, workspace, name, tty, cols, rows)
 	}
 	if workspace == "" || name == "" || (len(argv) == 0 && !options.AttachMainProcess) {
 		return nil, fmt.Errorf("usage: ExecInteractiveWithTTY(workspace, name, argv, tty, cols, rows, options)")
@@ -187,6 +187,8 @@ func (s *mainProcessTTYClientStream) Recv() (*pb.ExecSandboxEvent, error) {
 	switch payload := event.GetPayload().(type) {
 	case *runtimev1.MainProcessServiceAttachTTYResponse_Stdout:
 		return &pb.ExecSandboxEvent{Payload: &pb.ExecSandboxEvent_Stdout{Stdout: &pb.ExecSandboxStdout{Data: append([]byte(nil), payload.Stdout...)}}}, nil
+	case *runtimev1.MainProcessServiceAttachTTYResponse_Stderr:
+		return &pb.ExecSandboxEvent{Payload: &pb.ExecSandboxEvent_Stderr{Stderr: &pb.ExecSandboxStderr{Data: append([]byte(nil), payload.Stderr...)}}}, nil
 	case *runtimev1.MainProcessServiceAttachTTYResponse_ExitCode:
 		return &pb.ExecSandboxEvent{Payload: &pb.ExecSandboxEvent_Exit{Exit: &pb.ExecSandboxExit{ExitCode: payload.ExitCode}}}, nil
 	default:
@@ -200,8 +202,14 @@ func (s *mainProcessTTYClientStream) CloseSend() error { return s.stream.CloseSe
 // sandbox startup. It uses the Quarshell extension service while leaving the
 // pinned OpenShell gateway descriptor unchanged.
 func (c *Client) AttachMainProcessTTY(ctx context.Context, workspace, name string, cols, rows uint32) (SandboxInteractiveOutput, error) {
+	return c.AttachMainProcess(ctx, workspace, name, true, cols, rows)
+}
+
+// AttachMainProcess attaches to the retained canonical workload using either
+// its PTY or its separate stdout/stderr pipe streams.
+func (c *Client) AttachMainProcess(ctx context.Context, workspace, name string, tty bool, cols, rows uint32) (SandboxInteractiveOutput, error) {
 	if workspace == "" || name == "" {
-		return nil, fmt.Errorf("usage: AttachMainProcessTTY(workspace, name, cols, rows)")
+		return nil, fmt.Errorf("usage: AttachMainProcess(workspace, name, tty, cols, rows)")
 	}
 	connection, err := c.gatewayConnection()
 	if err != nil {
@@ -213,7 +221,7 @@ func (c *Client) AttachMainProcessTTY(ctx context.Context, workspace, name strin
 		cancel()
 		return nil, fmt.Errorf("open main-process TTY attachment in sandbox %q: %w", name, err)
 	}
-	if err := stream.Send(&runtimev1.MainProcessServiceAttachTTYRequest{Payload: &runtimev1.MainProcessServiceAttachTTYRequest_Start{Start: &runtimev1.MainProcessTTYStart{Workspace: workspace, Sandbox: name, Cols: cols, Rows: rows}}}); err != nil {
+	if err := stream.Send(&runtimev1.MainProcessServiceAttachTTYRequest{Payload: &runtimev1.MainProcessServiceAttachTTYRequest_Start{Start: &runtimev1.MainProcessTTYStart{Workspace: workspace, Sandbox: name, Cols: cols, Rows: rows, NonTty: !tty}}}); err != nil {
 		cancel()
 		return nil, fmt.Errorf("start main-process TTY attachment in sandbox %q: %w", name, err)
 	}

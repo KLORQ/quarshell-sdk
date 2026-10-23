@@ -8,8 +8,8 @@ import (
 	"testing"
 	"time"
 
-	runtimev1 "github.com/KLORQ/quarshell-proto/gen/go/cautem/runtime/v1"
 	pb "github.com/KLORQ/quarshell-proto/gen/go/openshell/gateway/v1"
+	runtimev1 "github.com/KLORQ/quarshell-proto/gen/go/quarshell/runtime/v1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/test/bufconn"
@@ -217,9 +217,30 @@ func TestExecInteractiveWithTTYStreamsNonTTYInputAndWorkspace(t *testing.T) {
 	}
 	_ = mainSession.Close()
 	backend.mu.Lock()
-	defer backend.mu.Unlock()
-	if backend.mainStart == nil || backend.mainStart.GetWorkspace() != "team" || backend.mainStart.GetSandbox() != "shared" || backend.mainStart.GetCols() != 80 || backend.mainStart.GetRows() != 24 {
-		t.Fatalf("main-process attachment not preserved: %+v", backend.mainStart)
+	mainStart := backend.mainStart
+	backend.mu.Unlock()
+	if mainStart == nil || mainStart.GetWorkspace() != "team" || mainStart.GetSandbox() != "shared" || mainStart.GetCols() != 80 || mainStart.GetRows() != 24 || mainStart.GetNonTty() {
+		t.Fatalf("main-process attachment not preserved: %+v", mainStart)
+	}
+	pipeSession, err := client.ExecInteractiveWithTTY(context.Background(), "team", "shared", nil, false, 0, 0, SandboxExecOptions{AttachMainProcess: true})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := CloseSandboxExecInput(pipeSession); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := io.Copy(io.Discard, pipeSession); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := pipeSession.ExitCode(); err != nil {
+		t.Fatal(err)
+	}
+	_ = pipeSession.Close()
+	backend.mu.Lock()
+	mainStart = backend.mainStart
+	backend.mu.Unlock()
+	if mainStart == nil || !mainStart.GetNonTty() {
+		t.Fatalf("non-TTY main-process attachment was not selected: %+v", mainStart)
 	}
 }
 

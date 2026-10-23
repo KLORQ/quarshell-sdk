@@ -2,10 +2,10 @@ module github.com/KLORQ/quarshell-sdk
 
 go 1.27.0
 
-toolchain go1.27.2
+toolchain go1.27.3
 
 require (
-	github.com/KLORQ/quarshell-proto v0.2.2
+	github.com/KLORQ/quarshell-proto v0.2.3
 	google.golang.org/grpc v1.84.0
 	google.golang.org/protobuf v1.36.12
 	gopkg.in/yaml.v3 v3.0.1

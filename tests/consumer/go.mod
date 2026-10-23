@@ -2,7 +2,7 @@ module github.com/KLORQ/quarshell-sdk/tests/consumer
 
 go 1.27.0
 
-toolchain go1.27.2
+toolchain go1.27.3
 
 require github.com/KLORQ/quarshell-sdk v0.0.0
 

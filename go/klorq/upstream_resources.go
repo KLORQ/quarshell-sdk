@@ -17,7 +17,7 @@ import (
 )
 
 const defaultWorkspace = "default"
-const runtimeCredentialsAnnotation = "cautem.io/runtime-credentials"
+const runtimeCredentialsAnnotation = "quarshell.io/runtime-credentials"
 
 // ListProviders lists provider metadata through the pinned OpenShell contract.
 // Credential values are never copied into the public SDK record.
@@ -117,7 +117,7 @@ func (c *Client) PutProvider(ctx context.Context, record ProviderRecord) error {
 		return fmt.Errorf("provider name and type are required")
 	}
 	// OpenShell Provider.Update replaces the credential map. Use the narrow
-	// cautem RPC for a partial patch so old secret values never need to be
+	// quarshell RPC for a partial patch so old secret values never need to be
 	// read or sent back by the client.
 	if !sameCredentialKeys(record.EnvVars, record.Credentials) {
 		return c.UpdateProviderCredentials(ctx, record.Workspace, record.Name, record.Credentials)

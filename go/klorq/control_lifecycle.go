@@ -49,7 +49,7 @@ func (c *Client) CreateControlSandboxOperation(ctx context.Context, sandbox Sand
 		return ControlMutationResult{}, fmt.Errorf("sandbox pids limit is Gateway driver configuration, not a per-sandbox OpenShell field")
 	}
 	if sandbox.BasePolicyYAML != "" {
-		return ControlMutationResult{}, fmt.Errorf("sandbox base_policy_yaml is a legacy Cautem field; use policy_yaml for OpenShell sandbox policy")
+		return ControlMutationResult{}, fmt.Errorf("sandbox base_policy_yaml is a legacy Quarshell field; use policy_yaml for OpenShell sandbox policy")
 	}
 	serviceExposures, err := openShellServiceExposures(sandbox.ServiceExposures)
 	if err != nil {

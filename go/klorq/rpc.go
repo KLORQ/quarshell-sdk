@@ -85,7 +85,7 @@ func (c *Client) gatewayConnection() (*grpc.ClientConn, error) {
 		transport = credentials.NewTLS(config)
 	case "http":
 		host := strings.ToLower(endpoint.Hostname())
-		if !isLoopbackHost(host) && host != "host.cautem.internal" {
+		if !isLoopbackHost(host) && host != "host.quarshell.internal" {
 			return nil, fmt.Errorf("gateway RPC: unencrypted gRPC is allowed only for local gateway routes")
 		}
 		transport = insecure.NewCredentials()

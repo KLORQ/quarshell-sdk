@@ -11,7 +11,7 @@
   <a href="https://github.com/KLORQ/quarshell-sdk"><img src="https://img.shields.io/badge/Go-1.27+-00ADD8?logo=go" alt="Go Version"></a>
 </p>
 <p align="center">
-  <sub>Part of the <a href="https://github.com/KLORQ">cautem / cautem</a> ecosystem</sub>
+  <sub>Part of the <a href="https://github.com/KLORQ">quarshell / quarshell</a> ecosystem</sub>
 </p>
 
 ---
@@ -31,7 +31,7 @@ OpenShell page methods reject negative sizes, cap requests above 1000 records,
 and use the Gateway default when page size is zero.
 
 For a Gateway-managed create with named browser services, set
-`Sandbox.ServiceExposures` to `[]cautem.ServiceExposure` before calling
+`Sandbox.ServiceExposures` to `[]quarshell.ServiceExposure` before calling
 `CreateControlSandboxOperation`. The result includes `ServiceURLs`. The Gateway
 validates exposure names and ports before provisioning and attempts cleanup if
 registration fails; a runtime cleanup failure is returned for reconciliation.
@@ -62,13 +62,13 @@ history and reports zero byte count because OpenShell does not return YAML sizes
 Platform administrators can use `ListGlobalPolicyRevisionsPage` or
 `ListGlobalPolicyRevisionsGateway` for global policy history.
 
-Interactive byte streams stay on the CLI (`cautem connect`). New gateway operations use the existing gRPC contracts.
+Interactive byte streams stay on the CLI (`quarshell connect`). New gateway operations use the existing gRPC contracts.
 
 ### Key Features
 
 | Category | Capabilities |
 |----------|--------------|
-| **Client** | `go/cautem` — resource facade over generated RPC clients; some legacy HTTP methods remain during migration |
+| **Client** | `go/quarshell` — resource facade over generated RPC clients; some legacy HTTP methods remain during migration |
 | **Execution** | OpenShell `ExecSandbox` RPC; interactive TTY stays on the CLI |
 | **Proposals** | List / get / approve / reject |
 
@@ -95,7 +95,7 @@ import (
 )
 
 func main() {
-    c := cautem.New("http://127.0.0.1:7443")
+    c := quarshell.New("http://127.0.0.1:7443")
     list, err := c.ListControlSandboxes(context.Background(), "default", false)
     if err != nil {
         panic(err)
@@ -110,7 +110,7 @@ func main() {
 
 | Path | Purpose |
 |------|---------|
-| `go/cautem` | Public Go SDK |
+| `go/quarshell` | Public Go SDK |
 | `internal/gatewayclient/` | Minimal HTTP health transport and shared SDK record types (not importable outside the module) |
 
 `ListControlSandboxes(ctx, workspace, allWorkspaces)`, `GetControlSandbox`,
@@ -157,4 +157,4 @@ pass the returned token in the next call to continue pagination.
 
 ## License
 
-[Apache-2.0](./LICENSE) © cautem
+[Apache-2.0](./LICENSE) © quarshell

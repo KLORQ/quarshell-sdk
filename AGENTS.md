@@ -2,7 +2,7 @@
 
 ## Scope
 
-This repository contains the Go client for the cautem gateway, including
+This repository contains the Go client for the quarshell gateway, including
 generated gRPC clients and higher-level sandbox APIs.
 
 ## Working rules

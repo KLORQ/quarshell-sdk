@@ -4,7 +4,7 @@
 //
 // Exec runs over the pinned OpenShell ExecSandbox gRPC method.
 // Interactive sessions and IDE access use SSH sessions: CreateSSHSession plus
-// `cautem ssh-proxy` / `cautem sandbox connect`.
+// `quarshell ssh-proxy` / `quarshell sandbox connect`.
 package klorq
 
 import (
@@ -23,7 +23,7 @@ import (
 )
 
 // EnvToken is the default bearer for New.
-const EnvToken = "CAUTEM_GATEWAY_TOKEN"
+const EnvToken = "QUARSHELL_GATEWAY_TOKEN"
 
 // ErrSandboxNotReady is returned when the sandbox supervisor relay is not connected.
 var ErrSandboxNotReady = gc.ErrSandboxNotReady
@@ -104,7 +104,7 @@ func (c *Client) workspace() string {
 }
 
 // New builds a client for a gateway base URL (e.g. http://127.0.0.1:7443),
-// authenticated with $CAUTEM_GATEWAY_TOKEN when set.
+// authenticated with $QUARSHELL_GATEWAY_TOKEN when set.
 func New(baseURL string) *Client {
 	return NewWithToken(baseURL, os.Getenv(EnvToken))
 }
@@ -167,7 +167,7 @@ func (c *Client) Close() error {
 	return closeErr
 }
 
-// Stable type aliases for cautem gateway resources.
+// Stable type aliases for quarshell gateway resources.
 type (
 	Labels                = gc.Labels
 	Credentials           = gc.Credentials
