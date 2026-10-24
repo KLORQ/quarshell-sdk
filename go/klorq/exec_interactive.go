@@ -208,6 +208,12 @@ func (c *Client) AttachMainProcessTTY(ctx context.Context, workspace, name strin
 // AttachMainProcess attaches to the retained canonical workload using either
 // its PTY or its separate stdout/stderr pipe streams.
 func (c *Client) AttachMainProcess(ctx context.Context, workspace, name string, tty bool, cols, rows uint32) (SandboxInteractiveOutput, error) {
+	return c.AttachMainProcessWithReaderID(ctx, workspace, name, tty, cols, rows, "")
+}
+
+// AttachMainProcessWithReaderID attaches to canonical workload output. Reuse
+// readerID when reconnecting to resume after the last Gateway checkpoint.
+func (c *Client) AttachMainProcessWithReaderID(ctx context.Context, workspace, name string, tty bool, cols, rows uint32, readerID string) (SandboxInteractiveOutput, error) {
 	if workspace == "" || name == "" {
 		return nil, fmt.Errorf("usage: AttachMainProcess(workspace, name, tty, cols, rows)")
 	}
@@ -221,7 +227,7 @@ func (c *Client) AttachMainProcess(ctx context.Context, workspace, name string, 
 		cancel()
 		return nil, fmt.Errorf("open main-process TTY attachment in sandbox %q: %w", name, err)
 	}
-	if err := stream.Send(&runtimev1.MainProcessServiceAttachTTYRequest{Payload: &runtimev1.MainProcessServiceAttachTTYRequest_Start{Start: &runtimev1.MainProcessTTYStart{Workspace: workspace, Sandbox: name, Cols: cols, Rows: rows, NonTty: !tty}}}); err != nil {
+	if err := stream.Send(&runtimev1.MainProcessServiceAttachTTYRequest{Payload: &runtimev1.MainProcessServiceAttachTTYRequest_Start{Start: &runtimev1.MainProcessTTYStart{Workspace: workspace, Sandbox: name, Cols: cols, Rows: rows, NonTty: !tty, ReaderId: readerID}}}); err != nil {
 		cancel()
 		return nil, fmt.Errorf("start main-process TTY attachment in sandbox %q: %w", name, err)
 	}
