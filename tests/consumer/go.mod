@@ -7,7 +7,7 @@ toolchain go1.27.3
 require github.com/KLORQ/quarshell-sdk v0.0.0
 
 require (
-	github.com/KLORQ/quarshell-proto v0.2.6 // indirect
+	github.com/KLORQ/quarshell-proto v0.2.8 // indirect
 	golang.org/x/net v0.61.0 // indirect
 	golang.org/x/sys v0.49.0 // indirect
 	golang.org/x/text v0.43.0 // indirect
